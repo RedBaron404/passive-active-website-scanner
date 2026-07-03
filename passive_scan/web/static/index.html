@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IG-88 Corporate Scanner</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">IG-88</div>
+          <div class="brand-text">
+            <strong>IG-88 Scanner</strong>
+            <span>Corporate · local</span>
+          </div>
+        </div>
+        <nav class="nav">
+          <button type="button" class="nav-item active" data-view="dashboard">Dashboard</button>
+          <button type="button" class="nav-item" data-view="targets">Targets</button>
+          <button type="button" class="nav-item" data-view="reports">Reports</button>
+        </nav>
+        <div class="sidebar-foot">
+          <p class="muted small" id="paths-hint">Reports save locally on your Mac.</p>
+          <button type="button" class="btn ghost small" id="open-folder-btn">Open reports folder</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="view-dashboard" class="view active">
+          <header class="page-header">
+            <div>
+              <h1>Dashboard</h1>
+              <p class="subtitle" id="program-subtitle">Loading…</p>
+            </div>
+            <button type="button" class="btn primary" id="run-scan-btn">Run scan</button>
+          </header>
+
+          <div id="scan-error-banner" class="scan-error-banner hidden" role="alert"></div>
+
+          <div class="card scan-setup-card" id="scan-setup-card">
+            <h2>Prepare scan</h2>
+            <p id="scan-locked-notice" class="scan-locked-notice hidden"></p>
+            <fieldset id="scan-setup-fieldset">
+              <div class="mode-toggle" role="group" aria-label="Scan mode">
+                <label class="mode-option">
+                  <input type="radio" name="scan-mode" value="passive" checked />
+                  <span class="mode-label">Passive</span>
+                  <span class="mode-desc">TLS, CT subdomains, headers, CVE fingerprint</span>
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="scan-mode" value="active" />
+                  <span class="mode-label">Active</span>
+                  <span class="mode-desc">+ port checks & path probes — still no exploits</span>
+                </label>
+              </div>
+              <p class="small muted mode-hint" id="mode-hint"></p>
+              <div class="target-select-header">
+                <strong>Targets to include</strong>
+                <button type="button" class="btn ghost small" id="targets-select-all">Select all</button>
+                <button type="button" class="btn ghost small" id="targets-select-none">Clear</button>
+              </div>
+              <div id="scan-target-checkboxes" class="target-checkboxes"></div>
+            </fieldset>
+            <p class="small muted legal-hint">
+              Authorized assets only. Active mode uses TCP connects and HEAD/GET path checks — not exploit execution or credential attacks.
+            </p>
+          </div>
+
+          <div class="card status-card" id="scan-status-card">
+            <div class="status-row">
+              <span class="status-pill idle" id="status-pill">Ready</span>
+              <span class="muted" id="status-message">No scan in progress.</span>
+            </div>
+            <div class="progress-wrap hidden" id="progress-wrap">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="progress-ring-track" cx="60" cy="60" r="52" />
+                  <circle class="progress-ring-fill" id="progress-ring-fill" cx="60" cy="60" r="52" />
+                </svg>
+                <div class="progress-ring-center">
+                  <span id="progress-pct">0%</span>
+                </div>
+              </div>
+              <div class="progress-text">
+                <p class="progress-detail-main" id="progress-detail"></p>
+                <p class="small muted" id="progress-subdetail"></p>
+              </div>
+            </div>
+            <div class="result-actions hidden" id="result-actions">
+              <button type="button" class="btn secondary" id="view-latest-btn">View latest report</button>
+            </div>
+          </div>
+
+          <div class="grid two-col">
+            <div class="card">
+              <h2>What IG-88 does</h2>
+              <ul class="plain-list">
+                <li>Reviews URLs, hosts, IPs, and local config files you authorize.</li>
+                <li>TLS expiry, CT subdomain discovery, headers, login forms, CVE hints.</li>
+                <li>Saves actionable Markdown + JSON reports for engineering.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h2>Quick stats</h2>
+              <dl class="stats">
+                <dt>Surfaces configured</dt>
+                <dd id="stat-targets">—</dd>
+                <dt>Reports on disk</dt>
+                <dd id="stat-reports">—</dd>
+                <dt>Mode</dt>
+                <dd id="stat-mode">passive</dd>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-targets" class="view">
+          <header class="page-header">
+            <div>
+              <h1>Scan targets</h1>
+              <p class="subtitle">URLs, hosts, IPs, paths, or local files in your inventory</p>
+            </div>
+          </header>
+          <div class="card add-target-card">
+            <h2>Add a surface</h2>
+            <form id="add-target-form" class="add-target-form">
+              <div class="field">
+                <label for="target-label">Title</label>
+                <input type="text" id="target-label" name="label" placeholder="e.g. Support portal login" required autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="target-type">Surface type</label>
+                <select id="target-type" name="type">
+                  <option value="">Auto-detect from address</option>
+                  <option value="host">Hostname only (no https://)</option>
+                  <option value="ip">IP address</option>
+                  <option value="file">Local file path</option>
+                  <option value="path">Path on a site (+ base URL below)</option>
+                </select>
+                <p class="small muted">Paste a full <code>https://…</code> link with Auto-detect — no need to pick “URL” separately.</p>
+              </div>
+              <div class="field">
+                <label for="target-address">Address</label>
+                <input type="text" id="target-address" name="address" placeholder="https://…, 203.0.113.1, or /path/to/config" required autocomplete="off" />
+                <p class="small muted">Examples: <code>https://example.com</code>, <code>summit3.example.com</code>, <code>10.0.0.5</code>, <code>~/configs/nginx.conf</code></p>
+              </div>
+              <div class="field path-only hidden" id="field-base-url">
+                <label for="target-base-url">Base URL (for path type)</label>
+                <input type="text" id="target-base-url" name="base_url" placeholder="https://example.com" autocomplete="off" />
+              </div>
+              <div class="field path-only hidden" id="field-path-suffix">
+                <label for="target-path">Path suffix</label>
+                <input type="text" id="target-path" name="path" placeholder="/admin or /api/v1" autocomplete="off" />
+              </div>
+              <button type="submit" class="btn primary" id="add-target-btn">Add surface</button>
+              <p class="form-feedback hidden" id="add-target-feedback"></p>
+            </form>
+          </div>
+          <div class="card targets-card">
+            <h2>Configured surfaces</h2>
+            <div id="targets-list" class="targets-list"></div>
+          </div>
+        </section>
+
+        <section id="view-reports" class="view">
+          <header class="page-header">
+            <div>
+              <h1>Reports</h1>
+              <p class="subtitle">Organized by date under your reports folder</p>
+            </div>
+            <button type="button" class="btn ghost" id="refresh-reports-btn">Refresh</button>
+          </header>
+          <div class="reports-layout">
+            <div class="card reports-list-panel">
+              <div id="reports-by-date"></div>
+            </div>
+            <div class="card report-viewer-panel">
+              <div id="report-placeholder" class="placeholder">
+                <p>Select a report to read it here.</p>
+              </div>
+              <div id="report-actions-panel" class="report-actions-panel hidden"></div>
+              <div id="report-dashboard" class="report-dashboard-wrap hidden"></div>
+              <article id="report-content" class="report-content hidden"></article>
+              <div class="report-toolbar hidden" id="report-toolbar">
+                <button type="button" class="btn secondary small" id="export-gdocs-btn" title="Download HTML, then upload to Google Drive and Open with Google Docs">Export for Google Docs</button>
+                <a class="btn ghost small" id="download-html" href="#">Download HTML</a>
+                <a class="btn ghost small" id="download-md" href="#">Markdown</a>
+                <a class="btn ghost small" id="download-json" href="#">JSON</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/report-viewer.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

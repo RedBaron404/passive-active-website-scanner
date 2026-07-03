@@ -1,0 +1,56 @@
+program:
+  name: IG-88 Corporate Scanner
+  owner: Information Security
+  mode: passive
+request:
+  timeout_seconds: 20
+  delay_seconds: 1.0
+  user_agent: IG-88-Corporate-Scanner/1.0 (internal-security; authorized)
+  max_body_bytes: 524288
+  follow_redirects: true
+  max_redirects: 8
+discovery:
+  enable_subdomain_ct: true
+  max_subdomains_per_domain: 150
+  tls_warn_days: 30
+  tls_critical_days: 7
+targets:
+- id: marketing-home
+  label: Marketing site (homepage)
+  type: url
+  address: https://example.com/
+  category: marketing
+- id: summit-login
+  label: [YOUR_PRODUCT] customer portal (login)
+  type: url
+  address: https://summit3.example.com/login
+  category: customer-portal
+- id: customer-portal-login
+  label: Customer-Portal customer portal (login)
+  type: url
+  address: https://www.customer-portal.com/sign_in
+  category: customer-portal
+- id: summit-api-docs
+  label: [YOUR_PRODUCT] API documentation (public)
+  type: url
+  address: https://docs.example.com/documentation
+  category: api-documentation
+- id: api-base-metadata
+  label: [YOUR_PRODUCT] API base (unauthenticated HEAD only)
+  type: url
+  address: https://api.example.com/summit/beta
+  category: api-gateway
+  notes: HEAD/GET only; expects 401/403 without credentials — documents exposure,
+    not access.
+- id: cnn
+  label: CNN
+  type: url
+  address: https://www.cnn.com/
+  category: general
+  url: https://www.cnn.com/
+- id: zillow
+  label: Zillow
+  type: url
+  address: https://www.zillow.com/
+  category: general
+  url: https://www.zillow.com/
