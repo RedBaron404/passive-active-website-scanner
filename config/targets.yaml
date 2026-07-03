@@ -20,7 +20,7 @@ targets:
   type: url
   address: https://example.com/
   category: marketing
-- id: summit-login
+- id: portal-login
   label: [YOUR_PRODUCT] customer portal (login)
   type: url
   address: https://summit3.example.com/login
@@ -30,7 +30,7 @@ targets:
   type: url
   address: https://www.customer-portal.com/sign_in
   category: customer-portal
-- id: summit-api-docs
+- id: api-docs
   label: [YOUR_PRODUCT] API documentation (public)
   type: url
   address: https://docs.example.com/documentation
@@ -38,7 +38,7 @@ targets:
 - id: api-base-metadata
   label: [YOUR_PRODUCT] API base (unauthenticated HEAD only)
   type: url
-  address: https://api.example.com/summit/beta
+  address: https://api.example.com/v1/beta
   category: api-gateway
   notes: HEAD/GET only; expects 401/403 without credentials — documents exposure,
     not access.

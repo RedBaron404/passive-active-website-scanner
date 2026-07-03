@@ -12,7 +12,7 @@
 | [YOUR_PRODUCT] portal | `https://summit3.example.com/login` | Passive production |
 | Customer-Portal portal | `https://www.customer-portal.com/sign_in` | Passive production |
 | API docs | `https://docs.example.com/documentation` | Passive production |
-| API gateway | `https://api.example.com/summit/beta` | HEAD/GET metadata only |
+| API gateway | `https://api.example.com/v1/beta` | HEAD/GET metadata only |
 
 Expand via `config/targets.yaml` (support, status, legacy hosts, staging with separate ROE).
 
